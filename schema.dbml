@@ -1,0 +1,43 @@
+CREATE TYPE GenderEnum AS ENUM ('Male', 'Female','...');
+ TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    login  VARCHAR(50) UNIQUE
+);
+ //One-to-One
+TABLE UserAdditionalInfo (
+    user_id INT PRIMARY KEY REFERENCES Users(user_id),
+    full_name VARCHAR(100),
+    gender GenderEnum,
+    email VARCHAR(100) UNIQUE,
+    phone_number VARCHAR(15),
+    date_of_birth DATE
+);
+//One-to-many
+TABLE Visits (
+    visit_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES Users(user_id),
+    visit_date DATE,
+    comments TEXT
+)
+
+// Many-to-One
+
+TABLE Instructors (
+    instructor_id SERIAL PRIMARY KEY,
+    instructor_name VARCHAR(100),
+    specialization VARCHAR(100),
+    gender GenderEnum
+);
+TABLE Workouts (
+    workout_id SERIAL PRIMARY KEY,
+    workout_name VARCHAR(100),
+    instructor_id INT REFERENCES Instructors(instructor_id)
+);
+
+//Many-to-many
+TABLE UserWorkouts (
+    user_id INT REFERENCES Users(user_id),
+    workout_id INT REFERENCES Workouts(workout_id),
+    PRIMARY KEY (user_id, workout_id)
+);
+
