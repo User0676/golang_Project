@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"golang_Project/models"
 	"log"
 	"net/http"
@@ -21,19 +22,19 @@ type response struct {
 func createConnection() *sql.DB {
 	err := godotenv.Load(".env")
 
-	if err != nill {
+	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
-	if err != nill {
+	if err != nil {
 		panic(err)
 	}
 
 	err = db.Ping()
 
-	if err != nill {
+	if err != nil {
 		panic(err)
 	}
 
@@ -45,17 +46,17 @@ func GetInstructor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 
-	if err != nill {
+	if err != nil {
 		log.Fatalf("Unable to convert the string into int. %v", err)
 	}
 
 	instructor, err := getInstructor(int64(id))
 
-	if err != nill {
+	if err != nil {
 		log.Fatalf("unable to get instructor. %v", err)
 	}
 
-	json.NewDecoder(w).Encode(instructor)
+	json.NewEncoder(w).Encode(instructor)
 
 }
 
@@ -74,7 +75,7 @@ func HireInstructor(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&instructor)
 
-	if err != nill {
+	if err != nil {
 		log.Fatal("Unable to decode the request body. %v", err)
 	}
 
@@ -85,7 +86,7 @@ func HireInstructor(w http.ResponseWriter, r *http.Request) {
 		Message: "instructor hired succesfully",
 	}
 
-	json.NewDecoder(w).Encode(res)
+	json.NewEncoder(w).Encode(res)
 
 }
 
@@ -113,17 +114,17 @@ func UpdateInstructor(w http.ResponseWriter, r *http.Request) {
 		Message: msg,
 	}
 
-	json.NewDecoder(w).Encode(res)
+	json.NewEncoder(w).Encode(res)
 }
 
 func FireInstructor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err := strconv.ParseInt(params["id"])
+	id, err := strconv.Atoi(params["id"])
 
 	if err != nil {
 		log.Fatalf("Unable to convert string to int. %v", err)
 	}
-	deletedRows := fireInstructor(int64(int))
+	deletedRows := fireInstructor(int64(id))
 	msg := fmt.Sprintf("Instructor fired successfully. Total rows/records %v", deletedRows)
 
 	res := response{
@@ -174,7 +175,7 @@ func getInstructor(id int64) (models.Instructor, error) {
 	return instructor, err
 
 }
-func getAllInstructor() ([]models.Instructors, error) {
+func getAllInstructor() ([]models.Instructor, error) {
 	db := createConnection()
 	defer db.Close()
 	var instructors []models.Instructor
@@ -202,13 +203,41 @@ func getAllInstructor() ([]models.Instructors, error) {
 
 }
 
-func fireInstructor(id int64) int64 {
-
-}
 func updateInstructor(id int64, instructor models.Instructor) int64 {
 	db := createConnection()
 	defer db.Close()
 	sqlStatement := `UPDATE Instructors SET instructor_name=$2,specialization=$3,gender=$4 WHERE instructor_id = $1 `
 
-	db.Exec(sqlStatement, id, instructor.InstructorName, instructor.Specialization, instructor.Gender)
+	res, err := db.Exec(sqlStatement, id, instructor.InstructorName, instructor.Specialization, instructor.Gender)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatalf("Error while checking the rows %v", err)
+	}
+
+	fmt.Printf("Total rows affected %v", rowsAffected)
+	return rowsAffected
+}
+
+func fireInstructor(id int64) int64 {
+	db := createConnection()
+	defer db.Close()
+	sqlStatement := `DELETE FROM Instructors WHERE instructor_id = $1`
+
+	res, err := db.Exec(sqlStatement, id)
+	if err != nil {
+		log.Fatalf("Unable to execute the query %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Fatalf("Error while checking the rows %v", err)
+	}
+
+	fmt.Printf("Total rows affected %v", rowsAffected)
+	return rowsAffected
 }
