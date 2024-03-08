@@ -18,7 +18,7 @@ TABLE Visits (
     user_id INT REFERENCES Users(user_id),
     visit_date DATE,
     comments TEXT
-)
+);
 
 // Many-to-One
 
