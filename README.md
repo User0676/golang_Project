@@ -1,6 +1,7 @@
     PROJECT OVERVIEW:
-    Gym backend:
-|        
+    Gym backend:    
+    Simple gym-system for users and trainers backend that allows
+    the functions like create workout, check visits, choose instructor and client for them.
 
     MAIN FUNCTIONALITIES:
     1) Instructors: GET, POST, PUT, DELETE
@@ -17,7 +18,6 @@
     POST :/api/hireinstructor
     PUT : api/update/{id}"
     
-    DATABASE structure:
     
     
 
