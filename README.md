@@ -12,11 +12,11 @@
 
     
     API structure:
-    GET :/api/instructorS
-    GET :/api/instructor/{id}
-    DELETE : /api/fireinstructor/{id}
-    POST :/api/hireinstructor
-    PUT : api/update/{id}"
+    GET :/api/instructors
+    GET :/api/instructors/{id}
+    DELETE : /api/fireinstructors/{id}
+    POST :/api/hireinstructors
+    PUT : api/updateinstructors/{id}"
 
 
 
