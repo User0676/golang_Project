@@ -12,12 +12,15 @@
 
     
     API structure:
-    GET :/api/instructor
+    GET :/api/instructorS
     GET :/api/instructor/{id}
     DELETE : /api/fireinstructor/{id}
     POST :/api/hireinstructor
     PUT : api/update/{id}"
-    
+
+
+
+    *Ali Zhumatayev 21B030676*
     
     
 
