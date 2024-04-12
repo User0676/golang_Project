@@ -61,13 +61,58 @@ func GetInstructor(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllInstructor(w http.ResponseWriter, r *http.Request) {
-	instructors, err := getAllInstructor()
+	// Parse query parameters for pagination
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("pageSize")
+
+	// Default values
+	page := 1
+	pageSize := 10
+
+	// Convert page and pageSize parameters to integers
+	if pageStr != "" {
+		page, _ = strconv.Atoi(pageStr)
+	}
+	if pageSizeStr != "" {
+		pageSize, _ = strconv.Atoi(pageSizeStr)
+	}
+
+	instructors, err := getAllInstructorPaginated(page, pageSize)
 
 	if err != nil {
-		log.Fatalf("Unable to get all the shocks %v", err)
+		log.Fatalf("Unable to get paginated instructors: %v", err)
 	}
 
 	json.NewEncoder(w).Encode(instructors)
+}
+func getAllInstructorPaginated(page int, pageSize int) ([]models.Instructor, error) {
+	db := createConnection()
+	defer db.Close()
+	var instructors []models.Instructor
+
+	// Calculate offset
+	offset := (page - 1) * pageSize
+
+	sqlStatement := `SELECT * FROM Instructors LIMIT $1 OFFSET $2`
+	rows, err := db.Query(sqlStatement, pageSize, offset)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query: %v", err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var instructor models.Instructor
+
+		err = rows.Scan(&instructor.InstructorId, &instructor.InstructorName, &instructor.Specialization, &instructor.Gender)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row: %v", err)
+		}
+		instructors = append(instructors, instructor)
+	}
+	return instructors, err
 }
 
 func HireInstructor(w http.ResponseWriter, r *http.Request) {
