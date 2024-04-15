@@ -64,6 +64,9 @@ func GetAllInstructor(w http.ResponseWriter, r *http.Request) {
 	// Parse query parameters for pagination
 	pageStr := r.URL.Query().Get("page")
 	pageSizeStr := r.URL.Query().Get("pageSize")
+	sortBy := r.URL.Query().Get("sortBy")
+	sortOrder := r.URL.Query().Get("sortOrder")
+	filter := r.URL.Query().Get("filter")
 
 	// Default values
 	page := 1
@@ -77,7 +80,7 @@ func GetAllInstructor(w http.ResponseWriter, r *http.Request) {
 		pageSize, _ = strconv.Atoi(pageSizeStr)
 	}
 
-	instructors, err := getAllInstructorPaginated(page, pageSize)
+	instructors, err := getAllInstructorPaginated(page, pageSize, sortBy, sortOrder, filter)
 
 	if err != nil {
 		log.Fatalf("Unable to get paginated instructors: %v", err)
@@ -85,7 +88,8 @@ func GetAllInstructor(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(instructors)
 }
-func getAllInstructorPaginated(page int, pageSize int) ([]models.Instructor, error) {
+
+func getAllInstructorPaginated(page int, pageSize int, sortBy string, sortOrder string, filter string) ([]models.Instructor, error) {
 	db := createConnection()
 	defer db.Close()
 	var instructors []models.Instructor
@@ -93,8 +97,23 @@ func getAllInstructorPaginated(page int, pageSize int) ([]models.Instructor, err
 	// Calculate offset
 	offset := (page - 1) * pageSize
 
-	sqlStatement := `SELECT * FROM Instructors LIMIT $1 OFFSET $2`
-	rows, err := db.Query(sqlStatement, pageSize, offset)
+	// Build SQL query with filtering and sorting
+	sqlStatement := fmt.Sprintf("SELECT * FROM Instructors")
+
+	// Add WHERE clause for filtering
+	if filter != "" {
+		sqlStatement += fmt.Sprintf(" WHERE instructor_name LIKE '%%%s%%' OR specialization LIKE '%%%s%%'", filter, filter)
+	}
+
+	// Add ORDER BY clause for sorting
+	if sortBy != "" {
+		sqlStatement += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortOrder)
+	}
+
+	// Add LIMIT and OFFSET clauses for pagination
+	sqlStatement += fmt.Sprintf(" LIMIT %d OFFSET %d", pageSize, offset)
+
+	rows, err := db.Query(sqlStatement)
 
 	if err != nil {
 		log.Fatalf("Unable to execute the query: %v", err)
