@@ -1,7 +1,9 @@
 CREATE TYPE GenderEnum AS ENUM ('Male', 'Female','...');
  TABLE Users (
     user_id SERIAL PRIMARY KEY,
-    login  VARCHAR(50) UNIQUE
+    username VARCHAR(255),
+    email VARCHAR(255),
+    password VARCHAR(255),
 );
  //One-to-One
 TABLE UserAdditionalInfo (
