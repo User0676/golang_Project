@@ -4,13 +4,13 @@
 
 --CREATE EXTENSION IF NOT EXISTS citext;
 
-CREATE TABLE IF NOT EXISTS users
-(
-    id BIGSERIAL PRIMARY KEY,
-    created_at timestamp(0) WITH TIME ZONE NOT NULL DEFAULT now(),
-    name text NOT NULL,
-    email CITEXT UNIQUE NOT NULL,
-    password_hash bytea not  null,
-    activated bool NOT NULL ,
-    version INTEGER NOT NULL DEFAULT 1
+CREATE TABLE users (
+                       id SERIAL PRIMARY KEY,
+                       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                       deleted_at TIMESTAMP WITH TIME ZONE,
+                       name VARCHAR(255),
+                       email VARCHAR(255) UNIQUE,
+                       password VARCHAR(255),
+                       role VARCHAR(255)
 );
